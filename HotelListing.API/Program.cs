@@ -1,16 +1,23 @@
-using HotelListing.API.Data;
+﻿using HotelListing.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
-
 var connectionString = builder.Configuration.GetConnectionString("HotelListingDbConnectionString");
 
 builder.Services.AddDbContext<HotelListingDbContext>(options =>
 {
-    options.UseSqlServer(connectionString);
+    options.UseSqlServer(connectionString, 
+            sqlServerOptionsAction: sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorNumbersToAdd: null);
+            }
+        );
 });
 
 builder.Services.AddControllers();
