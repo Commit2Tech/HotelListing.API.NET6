@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Microsoft.Extensions.DependencyInjection;
+using HotelListing.API.Configurations;
+using HotelListing.API.Repository;
+using HotelListing.API.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -33,6 +36,10 @@ builder.Services.AddCors(options => {
 });
 
 builder.Host.UseSerilog((ctx, lc) => lc.WriteTo.Console().ReadFrom.Configuration(ctx.Configuration));
+
+builder.Services.AddAutoMapper(typeof(MapperConfig));
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
 
 var app = builder.Build();
 
