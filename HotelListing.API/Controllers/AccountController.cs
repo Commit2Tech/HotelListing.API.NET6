@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using HotelListing.API.Contracts;
-using HotelListing.API.Models.Users;
-using Microsoft.AspNetCore.Http;
+using HotelListing.API.Core.Contracts;
+using HotelListing.API.Core.Models.Users;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace HotelListing.API.Controllers
 {
@@ -12,10 +10,12 @@ namespace HotelListing.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAuthManager _authManager;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IMapper mapper, IAuthManager authManager)
+        public AccountController(IMapper mapper, IAuthManager authManager, ILogger<AccountController> logger)
         {
             _authManager = authManager;
+            _logger = logger;
         }
 
         //POST: api/account/register
@@ -26,6 +26,7 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Register([FromBody] ApiUserDto apiUserDto)
         {
+            _logger.LogInformation($"Register attempt for {apiUserDto.Email}");
             var errors = await _authManager.Register(apiUserDto);
 
             if (errors.Any())
@@ -48,6 +49,8 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> Login([FromBody] LoginDto loginDto)
         {
+            _logger.LogInformation($"Login attempt for {loginDto.Email}");
+
             var authResponse = await _authManager.Login(loginDto);
 
             if (authResponse is null)
@@ -56,6 +59,7 @@ namespace HotelListing.API.Controllers
             }
 
             return Ok(authResponse);
+
         }
 
         //POST: api/account/refreshToken
